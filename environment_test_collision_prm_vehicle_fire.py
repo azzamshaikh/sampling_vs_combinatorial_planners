@@ -107,6 +107,8 @@ class Scheduler:
         # print('Total burning:', self.n_burning)
         # # print('Total burned:', self.n_burned)
         # print('Total extinguished:', self.n_extinguished)
+        self.wait_five_seconds = 0
+        self.extinguish_complete = False
 
     def __call__(self, iterations):
         # if iterations % 500 == 0:
@@ -131,10 +133,17 @@ class Scheduler:
         obstacle = np.random.choice(self.obstacles.sprites())
         return obstacle
 
-    def set_extinguished(self):
-        extinguish = self.to_be_extinguished.pop(0)
-        extinguish.set_color(self.colors[2])
-        extinguish.set_state(self.states[2])
+    def set_extinguished(self,iterations):
+        if self.wait_five_seconds < 5:
+            print('Spraying now!')
+            self.wait_five_seconds += 1
+        elif self.wait_five_seconds == 5:
+            extinguish = self.to_be_extinguished.pop(0)
+            extinguish.set_color(self.colors[2])
+            extinguish.set_state(self.states[2])
+            print('Extinguished!')
+            self.wait_five_seconds = 0
+            self.extinguish_complete = True
 
 
     def set_fire_update(self):
@@ -283,14 +292,17 @@ class Unimog(pygame.sprite.Sprite):
         # self.open_list.put((self.start_node.h, self.start_node))
         #self.open_list.put((self.start_node.h, self.start_node.f, self.start_node))
         #self.open_list.put(self.start_node)
-        self.open_list.put((self.start_node.h,self.start_node))
+        #self.open_list.put((self.start_node.h,self.start_node))
+        self.open_list.put((self.start_node.f, self.start_node))
         self.solution_node = None
         self.node_sequence = []
         self.pose_sequence = []
         self.iterations = 0
 
+        self.total_runs = 0
+
         self.dt = 1
-        self.max_v = 1 * self.pixels_per_meter
+        self.max_v = 2 * self.pixels_per_meter
         # self.motion_primitives = [(-self.max_v, -35),
         #                           (-self.max_v, -15),
         #                           (-self.max_v, 0),
@@ -301,16 +313,26 @@ class Unimog(pygame.sprite.Sprite):
         #                           (self.max_v, 0),
         #                           (self.max_v, 15),
         #                           (self.max_v, 35)]
-        self.motion_primitives = [(-self.max_v, -30),
+        # self.motion_primitives = [(-self.max_v, -30),
+        #                           #(-self.max_v, -15),
+        #                           (-self.max_v, 0),
+        #                           #(-self.max_v, 15),
+        #                           (-self.max_v, 30),
+        #                           (self.max_v, -30),
+        #                           #(self.max_v, -15),
+        #                           (self.max_v, 0),
+        #                           #(self.max_v, 15),
+        #                           (self.max_v, 30)]
+        self.motion_primitives = [(-self.max_v, -20),
                                   #(-self.max_v, -15),
                                   (-self.max_v, 0),
                                   #(-self.max_v, 15),
-                                  (-self.max_v, 30),
-                                  (self.max_v, -30),
+                                  (-self.max_v, 20),
+                                  (self.max_v, -20),
                                   #(self.max_v, -15),
                                   (self.max_v, 0),
                                   #(self.max_v, 15),
-                                  (self.max_v, 30)]
+                                  (self.max_v, 20)]
         self.test_vehicle = Vehicle(0, 0, (0, 0, 255), 0)
         self.dist_threshold = 4.0 * self.pixels_per_meter
 
@@ -318,16 +340,60 @@ class Unimog(pygame.sprite.Sprite):
         self.end_timer = None
         self.time_sum = 0
 
-    def init_search(self, prm_pose_sequence):
+    def init_search(self, prm_pose_sequence,reset=False):
         self.pose_sequence = prm_pose_sequence
         self.down_sampled_sequence = self.down_sample()
 
-        print(self.down_sampled_sequence)
-        print(self.pose_sequence)
+        #print(self.down_sampled_sequence)
+        #print(self.pose_sequence)
         # self.update_goal(self.pose_sequence[self.pose_sequence_counter])
         # self.num_waypoints = len(self.pose_sequence)
-        self.update_goal(self.down_sampled_sequence[self.pose_sequence_counter])
+        # self.update_goal(self.down_sampled_sequence[self.pose_sequence_counter],reset)
+        print(len(self.down_sampled_sequence))
+        self.update_goal(self.down_sampled_sequence[0], reset)
         self.num_waypoints = len(self.down_sampled_sequence)
+
+    def down_sample(self):
+        down_sampled = []
+        points = int(len(self.pose_sequence) * 0.5)
+        if points == 0:
+            return self.pose_sequence
+        else:
+            inc = len(self.pose_sequence) / points
+        inc_total = 0
+        for _ in range(0, points):
+            down_sampled.append(self.pose_sequence[math.floor(inc_total)])
+            inc_total += inc
+        down_sampled.pop(0)
+        goal = list(self.pose_sequence[-1])
+        goal.append(0)
+        down_sampled.append(goal)
+        return down_sampled
+
+    def update_goal(self,new_goal,reset=False):
+        if reset is True:
+            self.start_node = self.solution_node
+            self.start_node.parent = None
+            # new_goal = list(new_goal)
+            # new_goal.append(0)
+            self.goal_node = Node(new_goal,None)
+            self.open_list = PriorityQueue()
+            self.open_list_visuals = []
+            self.closed_list = []
+            self.open_list.put((self.start_node.f, self.start_node))
+            self.solution_node = None
+            self.solution_found = False
+            self.node_sequence = []
+            self.pose_sequence = []
+            self.iterations = 0
+            self.current_waypoint_counter = 0
+            self.pose_plotting_counter = 0
+            self.pose_sequence_counter = 0
+            print('Planner is reinitialized')
+        else:
+            # new_goal = list(new_goal)
+            # new_goal.append(0)
+            self.goal_node = Node(new_goal, None)
 
     def animate_motion(self,screen):
         self.set_pose(self.pose_sequence[self.pose_plotting_counter])
@@ -338,32 +404,14 @@ class Unimog(pygame.sprite.Sprite):
             self.animation_wip = False
 
 
-    def update_goal(self,new_goal,reset=False):
-        if reset is True:
-            self.start_node = self.solution_node
-            self.start_node.parent = None
-            new_goal = list(new_goal)
-            new_goal.append(0)
-            self.goal_node = Node(tuple(new_goal),None)
-            self.open_list = PriorityQueue()
-            self.open_list_visuals = []
-            self.closed_list = []
-            self.open_list.put((self.start_node.h, self.start_node.f, self.start_node))
-            self.solution_node = None
-            self.solution_found = False
-            self.node_sequence = []
-            self.pose_sequence = []
-            self.iterations = 0
-            print('Planner is reinitialized')
-        else:
-            # new_goal = list(new_goal)
-            # new_goal.append(0)
-            self.goal_node = Node(new_goal, None)
+
 
     def __call__(self, screen):
+        t0 = process_time()
         #h, f, current_node = self.open_list.get()
         #current_node = self.open_list.get()
-        h, current_node = self.open_list.get()
+        #h, current_node = self.open_list.get()
+        f, current_node = self.open_list.get()
         self.open_list_visuals.append(current_node)
 
         # print(str(current_node.state) + "    " + str(self.goal_node.state) + "    " +
@@ -375,7 +423,7 @@ class Unimog(pygame.sprite.Sprite):
                 self.current_waypoint_counter += 1
                 print('waypoint reached! updating waypoint. next way point is #',
                       self.current_waypoint_counter, 'of',self.num_waypoints-1,
-                      'at',self.pose_sequence[self.current_waypoint_counter])
+                      'at',self.down_sampled_sequence[self.current_waypoint_counter])
                 #self.update_goal(self.pose_sequence[self.current_waypoint_counter])
                 self.update_goal(self.down_sampled_sequence[self.current_waypoint_counter])
                 self.open_list = PriorityQueue()
@@ -397,6 +445,7 @@ class Unimog(pygame.sprite.Sprite):
                     self.node_sequence = node_path[::-1]
                     self.pose_sequence = pose_path[::-1]
                     self.animation_wip = True
+                    self.total_runs += 1
 
         self.closed_list.append(current_node)
 
@@ -417,17 +466,21 @@ class Unimog(pygame.sprite.Sprite):
             else:
                 new_node = Node(new_state,current_node)
                 new_node.h = round(self.distance(current_node.state,self.goal_node.state))
-                new_node.g = round(current_node.g + self.cost(current_node.state,new_node.state))
+                new_node.g = round(self.reverse_cost(v) + self.steering_cost(w))
                 new_node.f = round(new_node.g + new_node.h)
                 children.append(new_node)
 
         for child in children:
-            if child not in self.closed_list and not any([node == child for h, node in self.open_list.queue]):
+            if child not in self.closed_list and not any([node == child for f, node in self.open_list.queue]):
                 #self.open_list.put((child.h, child.f,child))
                 #self.open_list.put(child)
-                self.open_list.put((child.h,child))
+                #self.open_list.put((child.h,child))
+                self.open_list.put((child.f,child))
+
 
         self.iterations += 1
+        t1 = process_time()
+        self.time_sum += t1-t0
 
     def is_rect_out_of_bounds(self, topleft, bottomleft, topright, bottomright):
         if (0 <= topleft[0] <= 1000 and 0 <= topleft[1] <= 1000 and 0 <= bottomleft[0] <= 1000 and 0 <= bottomleft[1] <=
@@ -453,6 +506,20 @@ class Unimog(pygame.sprite.Sprite):
             return True
         else:
             return False
+
+    @staticmethod
+    def reverse_cost(velocity):
+        if velocity < 0:
+            return 0
+        else:
+            return 0
+
+    @staticmethod
+    def steering_cost(steering):
+        if steering == 0:
+            return 0
+        else:
+            return 0
 
     @staticmethod
     def distance(current_pos, end_pos):
@@ -484,6 +551,10 @@ class Unimog(pygame.sprite.Sprite):
 
         #screen.set_at((self.goal_node.state[0], self.goal_node.state[1]), (255, 255, 255))
 
+        for idx in range(0, len(self.node_sequence) - 1):
+            pygame.draw.line(screen, (0, 0, 0), self.node_sequence[idx].state[:2],
+                             self.node_sequence[idx + 1].state[:2], width=1)
+
     def get_index(self):
         return self.x, self.y
 
@@ -510,19 +581,12 @@ class Unimog(pygame.sprite.Sprite):
             self.mask = pygame.mask.from_surface(self.image)
             collide = pygame.sprite.spritecollideany(self, self.obstacles, collided=None)
 
-    def down_sample(self):
-        down_sampled = []
-        points = int(len(self.pose_sequence) * 0.5)
-        inc = len(self.pose_sequence) / points
-        inc_total = 0
-        for _ in range(0, points):
-            down_sampled.append(self.pose_sequence[math.floor(inc_total)])
-            inc_total += inc
-        down_sampled.pop(0)
-        goal = list(self.pose_sequence[-1])
-        goal.append(0)
-        down_sampled.append(goal)
-        return down_sampled
+    def statistics(self):
+        print('Here are the Unimog Stats:')
+        print('\tTotal process time from object initialization to end time:', self.end_timer-self.start_timer)
+        print('\tSummation of elapsed time from planner calls:',self.time_sum)
+
+
 
 
 
@@ -574,17 +638,30 @@ class PRM:
         self.solution_failed = False
 
         self.pose_sequence = None
+        self.last_c_id = None
+
+        self.start_timer = process_time()
+        self.end_timer = None
+        self.time_sum = 0
+
+        self.map_gen_time = None
+        self.sampling_time = None
 
     def dijkstra_planning(self):
+        t0 = process_time()
         if not self.open_set:
             print('cannot find path')
             self.solution_failed = True
             self.solution_found = True # allows the game loop to progress
             self.solution_node = self.start_node
+            self.solution_c_id = self.last_c_id
         else:
             c_id = min(self.open_set, key=lambda o:self.open_set[o].cost) # inline funciton that will return the value with the smallest cost value
             # c-id is going to be the index of the smallest cost value in open set
             current = self.open_set[c_id]
+            if len(self.open_set) < 2 and current.parent_index == -1:
+                # logic to store the start position c_id if the planner fails to get a path
+                self.last_c_id = c_id
             #print(current)
             #print(c_id)
             #print(self.roadmap[c_id])
@@ -649,6 +726,9 @@ class PRM:
                         self.open_set[n_id].f = node.f
                 else:
                     self.open_set[n_id] = node
+        t1 = process_time()
+        self.time_sum += t1 - t0
+
 
     def update_goal(self,goal,reset=False):
         if reset is False:
@@ -679,7 +759,7 @@ class PRM:
             self.path_x = []
             self.path_y = []
             self.pose_sequence = None
-            print('Planner Reinitialized')
+            print('PRM Planner Reinitialized')
 
     def is_collision(self,sx,sy,gx,gy):
         x = sx
@@ -722,6 +802,7 @@ class PRM:
         return obstacles_x_list, obstacles_y_list
 
     def sample_points(self):
+        t0 = process_time()
         max_x = 1000
         max_y = 1000
         min_x = 0
@@ -749,8 +830,11 @@ class PRM:
 
         self.sample_x = sample_x
         self.sample_y = sample_y
+        t1 = process_time()
+        self.sampling_time = t1 = t0
 
     def generate_road_map(self):
+        t0 = process_time()
         n_sample = len(self.sample_x)
         self.sample_kd_tree = KDTree(np.vstack((self.sample_x,self.sample_y)).T)
 
@@ -770,6 +854,8 @@ class PRM:
                     break
 
             self.roadmap.append(edge_id)
+        t1 = process_time()
+        self.map_gen_time = t1-t0
 
     def set_pixels(self, screen):
         color = pygame.Color(239, 222, 205)#(173, 216, 230,150)
@@ -795,6 +881,12 @@ class PRM:
             if idx < len(self.path_x)-1:
                 pygame.draw.aaline(screen,(255,0,255),(pathx,pathy),
                                    (self.path_x[idx+1],self.path_y[idx+1]))
+
+    def statistics(self):
+        print('Here are the PRM Stats:')
+        print('\tTotal process time for sampling:', self.sampling_time)
+        print('\tTotal process time for map generation:', self.map_gen_time)
+        print('\tSummation of elapsed time from planner calls:',self.time_sum)
 
 
 class PRMNode:
@@ -834,7 +926,7 @@ class Simulation:
         self.width = width
         self.height = height
         self.screen = pygame.display.set_mode((width, height))
-        pygame.display.set_caption("Car Simulation")
+        pygame.display.set_caption("Wildfire")
         self.tetromino = Tetromino(10)
         self.tetromino.generate_grid()
         self.iterations = 0
@@ -867,7 +959,8 @@ class Simulation:
         obj = Obstacle((0,0))
         clock = pygame.time.Clock()
         counter = 0
-        while True:
+        #while True:
+        while self.iterations < 3601:
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
@@ -903,21 +996,33 @@ class Simulation:
             #         print('Updated!')
             #self.scheduler(self.iterations)
             #obj.draw(self.screen)
-            '''PRM LOGIC TO FIND PATH'''
+
             if not self.prm.solution_found:
+                '''PRM LOGIC TO FIND PATH'''
                 self.prm.dijkstra_planning()
-                '''IF PRM HAS GOT A PATH, SEND THAT PATH TO THE UNIMOG'''
+
                 if self.prm.solution_found and not self.prm.solution_failed:
-                    self.truck.init_search(self.prm.pose_sequence)
-                '''IF THE PRM FAILS TO FIND A SOLUTION, CONTINUE'''
+                    '''IF PRM HAS GOT A PATH, SEND THAT PATH TO THE UNIMOG'''
+                    if self.truck.total_runs == 0:
+                        '''THIS SENDS THE INITIAL GOAL'''
+                        self.truck.init_search(self.prm.pose_sequence)
+                    else:
+                        '''WHEN DOING MULTIPLE RUNS, EXECUTE THIS'''
+                        self.truck.init_search(self.prm.pose_sequence,True)
+
             elif self.prm.solution_failed:
+                '''IF THE PRM FAILS TO FIND A SOLUTION, CONTINUE'''
+
                 self.prm.next_goal = True
                 self.prm.solution_failed = False
+                self.prm.solution_found = False
                 continue
-                '''IF THE PERM HAS FOUND A SOLUTION, START TRUCK SEARCH'''
+
             elif self.prm.solution_found and not self.prm.solution_failed:
-                ''' truck is searching for a path'''
+                '''IF THE PRM HAS FOUND A SOLUTION, START TRUCK SEARCH'''
+
                 if not self.truck.solution_found:
+                    ''' truck is searching for a path'''
                     self.truck(self.screen)
                     #pygame.time.delay(1000)
                     #self.truck.pose_sequence_counter += 1
@@ -928,18 +1033,19 @@ class Simulation:
                         #self.truck.solution_found = False
                 elif self.truck.solution_found and self.truck.animation_wip:
                     '''if the truck finds a path, start moving'''
-                    print("Truck: animating")
                     self.truck.animate_motion(self.screen)
-                # elif self.truck.solution_found:
-                #     print('Burn extinguished')
-                #     self.scheduler.set_extinguished()
-                #     self.prm.next_goal = True
-                    #pygame.time.delay(3000)
-            # if self.prm.next_goal is True:
-            #     print('Updating Goal!')
-            #     self.prm.update_goal(self.scheduler.get_goal(), True)
-            #     self.prm.next_goal = False
-            #     print('On the Way!')
+                elif self.truck.solution_found:
+                    '''if truck has reached the goal, start extinguishing'''
+                    self.scheduler.set_extinguished(self.iterations)
+                    #pygame.time.delay(1000)
+                    if self.scheduler.extinguish_complete is True:
+                        self.prm.next_goal = True
+                        self.scheduler.extinguish_complete = False
+            if self.prm.next_goal is True:
+                print('Updating Goal!')
+                self.prm.update_goal(self.scheduler.get_goal(), True)
+                self.prm.next_goal = False
+                print('Finding a path now!')
             # for obstacle in self.obstacles:
             #     obstacle.draw(self.screen)
 
@@ -959,6 +1065,11 @@ class Simulation:
             #planner.set_pixels(self.screen)
             pygame.display.flip()
             self.iterations += 1
+        self.truck.end_timer = process_time()
+        print('\nSim Time Reached!\n')
+        self.scheduler.statistics()
+        print()
+        self.truck.statistics()
 
 
 if __name__ == "__main__":
