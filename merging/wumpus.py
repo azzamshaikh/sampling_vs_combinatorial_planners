@@ -42,7 +42,7 @@ class Wumpus(pygame.sprite.Sprite):
         self.node_sequence = []
         self.pose_sequence = []
         self.iterations = 0
-        step = 5
+        step = 8
         self.motion_model = [(step,step), # right,down
                              (-step,step), # left,down
                              (step,-step), # right, up
@@ -147,8 +147,8 @@ class Wumpus(pygame.sprite.Sprite):
         children = []
 
         for motion in self.motion_model:
-            x_new = current_node.state[0] + motion[0]
-            y_new = current_node.state[1] + motion[1]
+            x_new = round(current_node.state[0] + motion[0])
+            y_new = round(current_node.state[1] + motion[1])
             new_state = (x_new, y_new)
 
             if self.is_not_valid(screen,new_state):
@@ -164,6 +164,13 @@ class Wumpus(pygame.sprite.Sprite):
             if child not in self.closed_list and not any([node == child for node in self.open_list.queue]):
                 #self.open_list.put((child.h, child))
                 self.open_list.put(child)
+            elif any([node == child for node in self.open_list.queue]):
+                for index, item in enumerate(self.open_list.queue):
+                    if child == item:
+                        if child.h < item.h:
+                            self.open_list.queue.remove(item)
+                            self.open_list.put(child)
+
 
 
         self.iterations += 1

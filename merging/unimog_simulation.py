@@ -3,7 +3,7 @@ from pygame.locals import *
 from tetromino import *
 from unimog import *
 from prm import *
-from scheduler import *
+from unimog_scheduler import *
 
 
 class Simulation:
@@ -12,7 +12,8 @@ class Simulation:
         self.width = width
         self.height = height
         self.screen = pygame.display.set_mode((width, height))
-        pygame.display.set_caption("Wildfire")
+        pygame.display.set_caption("Wildfire - Unimog")
+        self.fps = 60
         self.tetromino = Tetromino(10)
         self.tetromino.generate_grid()
         self.iterations = 0
@@ -20,6 +21,8 @@ class Simulation:
         for index in self.tetromino.world_obs:
             self.obstacle_group.add(Obstacle(index))
         self.unimog_init()
+        self.clock = pygame.time.Clock()
+
 
     def run(self):
         while self.iterations < 3601:
@@ -32,7 +35,9 @@ class Simulation:
             self.render()
             pygame.display.flip()
             self.iterations += 1
+            self.clock.tick(self.fps)
         self.print_results()
+
 
 
     def unimog_init(self):

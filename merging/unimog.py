@@ -230,6 +230,12 @@ class Unimog(pygame.sprite.Sprite):
                 #self.open_list.put(child)
                 #self.open_list.put((child.h,child))
                 self.open_list.put((child.f,child))
+            elif any([node == child for f, node in self.open_list.queue]):
+                for index, (f,item) in enumerate(self.open_list.queue):
+                    if child == item:
+                        if child.h < item.h:
+                            self.open_list.queue.remove((f,item))
+                            self.open_list.put((child.f,child))
 
 
         self.iterations += 1

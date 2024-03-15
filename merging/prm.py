@@ -130,7 +130,7 @@ class PRM:
                 d = math.hypot(dx,dy)
                 cost = self.distance((self.sample_x[n_id],self.sample_y[n_id]),
                                      (self.goal_node.x,self.goal_node.y))
-                node = PRMNode(self.sample_x[n_id],self.sample_y[n_id],current.cost + d, c_id, heuristic=cost)
+                node = PRMNode(self.sample_x[n_id],self.sample_y[n_id],current.cost + d + cost, c_id, heuristic=cost)
                 node.f = node.cost + node.heuristic
                 if n_id in self.closed_set:
                     continue

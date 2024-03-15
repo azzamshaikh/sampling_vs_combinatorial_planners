@@ -107,4 +107,4 @@ class Node:
         return self.state == other.state
 
     def __lt__(self, other):
-        return self.h < other.h
+        return self.f < other.f
