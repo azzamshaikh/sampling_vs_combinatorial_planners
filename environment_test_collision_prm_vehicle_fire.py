@@ -608,7 +608,9 @@ class PRM:
         self.max_edge_length = 30.0*self.pixel2meter
         self.sample_x = None
         self.sample_y = None
+        self.sampling_time = None
         self.sample_points()
+        self.map_gen_time = None
         self.roadmap = []
         self.generate_road_map() # will update hte sample tree
         self.rect = pygame.Rect(0, 0, 5, 5)
@@ -644,8 +646,7 @@ class PRM:
         self.end_timer = None
         self.time_sum = 0
 
-        self.map_gen_time = None
-        self.sampling_time = None
+
 
     def dijkstra_planning(self):
         t0 = process_time()
@@ -1003,12 +1004,15 @@ class Simulation:
 
                 if self.prm.solution_found and not self.prm.solution_failed:
                     '''IF PRM HAS GOT A PATH, SEND THAT PATH TO THE UNIMOG'''
-                    if self.truck.total_runs == 0:
-                        '''THIS SENDS THE INITIAL GOAL'''
-                        self.truck.init_search(self.prm.pose_sequence)
+                    if len(self.prm.pose_sequence) == 0:
+                        self.truck.solution_found = True
                     else:
-                        '''WHEN DOING MULTIPLE RUNS, EXECUTE THIS'''
-                        self.truck.init_search(self.prm.pose_sequence,True)
+                        if self.truck.total_runs == 0:
+                            '''THIS SENDS THE INITIAL GOAL'''
+                            self.truck.init_search(self.prm.pose_sequence)
+                        else:
+                            '''WHEN DOING MULTIPLE RUNS, EXECUTE THIS'''
+                            self.truck.init_search(self.prm.pose_sequence,True)
 
             elif self.prm.solution_failed:
                 '''IF THE PRM FAILS TO FIND A SOLUTION, CONTINUE'''
@@ -1068,6 +1072,8 @@ class Simulation:
         self.truck.end_timer = process_time()
         print('\nSim Time Reached!\n')
         self.scheduler.statistics()
+        print()
+        self.prm.statistics()
         print()
         self.truck.statistics()
 
