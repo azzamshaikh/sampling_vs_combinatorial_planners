@@ -268,7 +268,7 @@ class Unimog(pygame.sprite.Sprite):
         self.next_goal = False
 
         print('Unimog Starting Position: (', self.x, ",", self.y, ')')
-
+        self.down_sampled_sequence = None
         self.counter = 0
 
         self.solution_found = False
@@ -282,7 +282,8 @@ class Unimog(pygame.sprite.Sprite):
         self.closed_list = []
         # self.open_list.put((self.start_node.h, self.start_node))
         #self.open_list.put((self.start_node.h, self.start_node.f, self.start_node))
-        self.open_list.put(self.start_node)
+        #self.open_list.put(self.start_node)
+        self.open_list.put((self.start_node.h,self.start_node))
         self.solution_node = None
         self.node_sequence = []
         self.pose_sequence = []
@@ -290,18 +291,28 @@ class Unimog(pygame.sprite.Sprite):
 
         self.dt = 1
         self.max_v = 1 * self.pixels_per_meter
-        self.motion_primitives = [(-self.max_v, -35),
-                                  (-self.max_v, -15),
+        # self.motion_primitives = [(-self.max_v, -35),
+        #                           (-self.max_v, -15),
+        #                           (-self.max_v, 0),
+        #                           (-self.max_v, 15),
+        #                           (-self.max_v, 35),
+        #                           (self.max_v, -35),
+        #                           (self.max_v, -15),
+        #                           (self.max_v, 0),
+        #                           (self.max_v, 15),
+        #                           (self.max_v, 35)]
+        self.motion_primitives = [(-self.max_v, -30),
+                                  #(-self.max_v, -15),
                                   (-self.max_v, 0),
-                                  (-self.max_v, 15),
-                                  (-self.max_v, 35),
-                                  (self.max_v, -35),
-                                  (self.max_v, -15),
+                                  #(-self.max_v, 15),
+                                  (-self.max_v, 30),
+                                  (self.max_v, -30),
+                                  #(self.max_v, -15),
                                   (self.max_v, 0),
-                                  (self.max_v, 15),
-                                  (self.max_v, 35)]
+                                  #(self.max_v, 15),
+                                  (self.max_v, 30)]
         self.test_vehicle = Vehicle(0, 0, (0, 0, 255), 0)
-        self.dist_threshold = 5.0 * self.pixels_per_meter
+        self.dist_threshold = 4.0 * self.pixels_per_meter
 
         self.start_timer = process_time()
         self.end_timer = None
@@ -309,13 +320,19 @@ class Unimog(pygame.sprite.Sprite):
 
     def init_search(self, prm_pose_sequence):
         self.pose_sequence = prm_pose_sequence
-        self.update_goal(self.pose_sequence[self.pose_sequence_counter])
-        self.num_waypoints = len(self.pose_sequence)
+        self.down_sampled_sequence = self.down_sample()
+
+        print(self.down_sampled_sequence)
+        print(self.pose_sequence)
+        # self.update_goal(self.pose_sequence[self.pose_sequence_counter])
+        # self.num_waypoints = len(self.pose_sequence)
+        self.update_goal(self.down_sampled_sequence[self.pose_sequence_counter])
+        self.num_waypoints = len(self.down_sampled_sequence)
 
     def animate_motion(self,screen):
         self.set_pose(self.pose_sequence[self.pose_plotting_counter])
         self.draw(screen)
-        pygame.time.delay(100)
+        #pygame.time.delay(500)
         self.pose_plotting_counter += 1
         if self.pose_plotting_counter == len(self.pose_sequence):
             self.animation_wip = False
@@ -339,24 +356,31 @@ class Unimog(pygame.sprite.Sprite):
             self.iterations = 0
             print('Planner is reinitialized')
         else:
-            new_goal = list(new_goal)
-            new_goal.append(0)
-            self.goal_node = Node(tuple(new_goal), None)
+            # new_goal = list(new_goal)
+            # new_goal.append(0)
+            self.goal_node = Node(new_goal, None)
 
     def __call__(self, screen):
         #h, f, current_node = self.open_list.get()
-        current_node = self.open_list.get()
+        #current_node = self.open_list.get()
+        h, current_node = self.open_list.get()
         self.open_list_visuals.append(current_node)
 
         # print(str(current_node.state) + "    " + str(self.goal_node.state) + "    " +
         #       str(self.distance(current_node.state,self.goal_node.state)))
 
         if self.distance(current_node.state, self.goal_node.state) < self.dist_threshold:
-            if self.current_waypoint_counter < self.num_waypoints:
+            if self.current_waypoint_counter < self.num_waypoints-1:
                 self.waypoint_reached = True
                 self.current_waypoint_counter += 1
-                print('waypoint reached! updating waypoint. next way point is #', self.current_waypoint_counter, 'at',self.pose_sequence[self.current_waypoint_counter])
-                self.update_goal(self.pose_sequence[self.current_waypoint_counter])
+                print('waypoint reached! updating waypoint. next way point is #',
+                      self.current_waypoint_counter, 'of',self.num_waypoints-1,
+                      'at',self.pose_sequence[self.current_waypoint_counter])
+                #self.update_goal(self.pose_sequence[self.current_waypoint_counter])
+                self.update_goal(self.down_sampled_sequence[self.current_waypoint_counter])
+                self.open_list = PriorityQueue()
+                self.open_list.put((current_node.h, current_node))
+
             else:#if self.pose_sequence_counter == len(self.pose_sequence):
                 print('Truck: found path')
                 current = current_node
@@ -398,9 +422,10 @@ class Unimog(pygame.sprite.Sprite):
                 children.append(new_node)
 
         for child in children:
-            if child not in self.closed_list and not any([node == child for node in self.open_list.queue]):
+            if child not in self.closed_list and not any([node == child for h, node in self.open_list.queue]):
                 #self.open_list.put((child.h, child.f,child))
-                self.open_list.put(child)
+                #self.open_list.put(child)
+                self.open_list.put((child.h,child))
 
         self.iterations += 1
 
@@ -454,7 +479,8 @@ class Unimog(pygame.sprite.Sprite):
         # for closed in self.closed_list:
         #     screen.set_at((closed.state[0],closed.state[1]),(255,255,0))
         for path in self.node_sequence:
-            screen.set_at((path.state[0], path.state[1]), (255, 0, 255))
+            self.visual_rect.center = (path.state[0], path.state[1])
+            pygame.draw.rect(screen, (0, 0, 0), self.visual_rect)
 
         #screen.set_at((self.goal_node.state[0], self.goal_node.state[1]), (255, 255, 255))
 
@@ -483,6 +509,20 @@ class Unimog(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(center=(self.x, self.y))
             self.mask = pygame.mask.from_surface(self.image)
             collide = pygame.sprite.spritecollideany(self, self.obstacles, collided=None)
+
+    def down_sample(self):
+        down_sampled = []
+        points = int(len(self.pose_sequence) * 0.5)
+        inc = len(self.pose_sequence) / points
+        inc_total = 0
+        for _ in range(0, points):
+            down_sampled.append(self.pose_sequence[math.floor(inc_total)])
+            inc_total += inc
+        down_sampled.pop(0)
+        goal = list(self.pose_sequence[-1])
+        goal.append(0)
+        down_sampled.append(goal)
+        return down_sampled
 
 
 

@@ -142,8 +142,9 @@ class Planner:
               str(distance(current_node.state,self.goal_node.state)))
 
         if self.iterations != 0:
-            if (self.angular_diff(current_node.state[2],self.goal_node.state[2]) < 0.15 and
-                    distance(current_node.state, self.goal_node.state) < self.dist_threshold):
+            # if (self.angular_diff(current_node.state[2],self.goal_node.state[2]) < 0.15 and
+            #         distance(current_node.state, self.goal_node.state) < self.dist_threshold):
+            if distance(current_node.state, self.goal_node.state) < self.dist_threshold:
                 print('found')
                 current = current_node
                 self.solution_node = current

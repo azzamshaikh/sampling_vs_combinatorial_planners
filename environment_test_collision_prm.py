@@ -47,7 +47,7 @@ class PRM:
         self.robot_radius = robot_radius*self.pixel2meter
         self.rng = rng
         self.n_sample = 1000
-        self.n_knn = 10
+        self.n_knn = 20
         self.max_edge_length = 50.0*self.pixel2meter
         self.sample_x = None
         self.sample_y = None
