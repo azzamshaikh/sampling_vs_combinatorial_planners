@@ -1,3 +1,4 @@
+import pygame.time
 from pygame.locals import *
 """local file import"""
 from tetromino import *

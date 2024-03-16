@@ -47,8 +47,8 @@ class PRM:
         self.robot_radius = robot_radius*self.pixel2meter
         self.rng = rng
         self.n_sample = 1000
-        self.n_knn = 20
-        self.max_edge_length = 50.0*self.pixel2meter
+        self.n_knn = 50
+        self.max_edge_length = 30.0*self.pixel2meter
         self.sample_x = None
         self.sample_y = None
         self.sample_points()
@@ -58,7 +58,7 @@ class PRM:
         #self.line = pygame.Surface(())
         self.path_x = []
         self.path_y = []
-        self.dijkstra_planning()
+        #self.dijkstra_planning()
 
     def get_obstacle_lists(self,obstacles):
         obstacles_x_list, obstacles_y_list = [],[]
@@ -316,7 +316,7 @@ class Simulation:
             #         self.next_goal = False
             #         print('Updated!')
 
-            obj.draw(self.screen)
+            #obj.draw(self.screen)
 
             # for obstacle in self.obstacles:
             #     obstacle.draw(self.screen)

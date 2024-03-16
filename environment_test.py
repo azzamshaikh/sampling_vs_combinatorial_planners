@@ -321,7 +321,7 @@ class Simulation:
             #         self.next_goal = False
             #         print('Updated!')
 
-            obj.draw(self.screen)
+            #obj.draw(self.screen)
 
             for obstacle in self.obstacles:
                 obstacle.draw(self.screen)

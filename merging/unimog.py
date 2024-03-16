@@ -77,16 +77,16 @@ class Unimog(pygame.sprite.Sprite):
         #                           (self.max_v, 0),
         #                           #(self.max_v, 15),
         #                           (self.max_v, 30)]
-        self.motion_primitives = [(-self.max_v, -20),
+        self.motion_primitives = [(-self.max_v, -22,1),
                                   #(-self.max_v, -15),
-                                  (-self.max_v, 0),
+                                  (-self.max_v, 0,1),
                                   #(-self.max_v, 15),
-                                  (-self.max_v, 20),
-                                  (self.max_v, -20),
+                                  (-self.max_v, 22,1),
+                                  (self.max_v, -22,1),
                                   #(self.max_v, -15),
-                                  (self.max_v, 0),
+                                  (self.max_v, 0,1),
                                   #(self.max_v, 15),
-                                  (self.max_v, 20)]
+                                  (self.max_v, 22,1)]
         self.test_vehicle = Vehicle(0, 0, (0, 0, 255), 0)
         self.dist_threshold = 4.0 * self.pixels_per_meter
 
@@ -220,7 +220,7 @@ class Unimog(pygame.sprite.Sprite):
             else:
                 new_node = Node(new_state,current_node)
                 new_node.h = round(self.distance(current_node.state,self.goal_node.state))
-                new_node.g = round(self.reverse_cost(v) + self.steering_cost(w))
+                new_node.g = current_node.g + motion[2] + round(self.reverse_cost(v) + self.steering_cost(w))
                 new_node.f = round(new_node.g + new_node.h)
                 children.append(new_node)
 
@@ -233,7 +233,7 @@ class Unimog(pygame.sprite.Sprite):
             elif any([node == child for f, node in self.open_list.queue]):
                 for index, (f,item) in enumerate(self.open_list.queue):
                     if child == item:
-                        if child.h < item.h:
+                        if child.f < item.f:
                             self.open_list.queue.remove((f,item))
                             self.open_list.put((child.f,child))
 
@@ -270,7 +270,7 @@ class Unimog(pygame.sprite.Sprite):
     @staticmethod
     def reverse_cost(velocity):
         if velocity < 0:
-            return 0
+            return 1
         else:
             return 0
 
@@ -279,7 +279,7 @@ class Unimog(pygame.sprite.Sprite):
         if steering == 0:
             return 0
         else:
-            return 0
+            return 1
 
     @staticmethod
     def distance(current_pos, end_pos):

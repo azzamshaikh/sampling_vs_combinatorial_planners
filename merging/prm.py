@@ -251,7 +251,7 @@ class PRM:
         self.sample_x = sample_x
         self.sample_y = sample_y
         t1 = process_time()
-        self.sampling_time = t1 = t0
+        self.sampling_time = t1 - t0
 
     def generate_road_map(self):
         t0 = process_time()

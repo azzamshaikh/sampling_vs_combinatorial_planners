@@ -205,8 +205,8 @@ class PRM:
         self.sample_kd_tree = None
         self.robot_radius = robot_radius*self.pixel2meter
         self.rng = rng
-        self.n_sample = 1000
-        self.n_knn = 30
+        self.n_sample = 500
+        self.n_knn = 10
         self.max_edge_length = 50.0*self.pixel2meter
         self.sample_x = None
         self.sample_y = None

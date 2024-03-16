@@ -1,4 +1,7 @@
 from queue import PriorityQueue
+
+import numpy as np
+
 from utilities import *
 from time import process_time
 
@@ -43,14 +46,14 @@ class Wumpus(pygame.sprite.Sprite):
         self.pose_sequence = []
         self.iterations = 0
         step = 8
-        self.motion_model = [(step,step), # right,down
-                             (-step,step), # left,down
-                             (step,-step), # right, up
-                             (-step,-step),# left, up
-                             (step,0), # right
-                             (-step,0), # left
-                             (0,step), # down
-                             (0,-step)] # up
+        self.motion_model = [(step,step,np.hypot(1,1)), # right,down
+                             (-step,step,np.hypot(1,1)), # left,down
+                             (step,-step,np.hypot(1,1)), # right, up
+                             (-step,-step,np.hypot(1,1)),# left, up
+                             (step,0,1), # right
+                             (-step,0,1), # left
+                             (0,step,1), # down
+                             (0,-step,1)] # up
 
         self.start_timer = process_time()
         self.end_timer = None
@@ -156,7 +159,7 @@ class Wumpus(pygame.sprite.Sprite):
             else:
                 new_node = Node(new_state,current_node)
                 new_node.h = round(self.distance(current_node.state,self.goal_node.state))
-                new_node.g = round(current_node.g + 1)
+                new_node.g = round(current_node.g + motion[2])
                 new_node.f = round(new_node.g + new_node.h)
                 children.append(new_node)
 
@@ -167,7 +170,7 @@ class Wumpus(pygame.sprite.Sprite):
             elif any([node == child for node in self.open_list.queue]):
                 for index, item in enumerate(self.open_list.queue):
                     if child == item:
-                        if child.h < item.h:
+                        if child.f < item.f:
                             self.open_list.queue.remove(item)
                             self.open_list.put(child)
 
@@ -211,11 +214,14 @@ class Wumpus(pygame.sprite.Sprite):
 
     def set_pixels(self,screen):
         #screen.set_at((self.start_node.state[0],self.start_node.state[1]),(255,255,255))
+        # for closed in self.closed_list:
+        #     self.visual_rect.center = (closed.state[0], closed.state[1])
+        #     pygame.draw.rect(screen, (0, 0, 0), self.visual_rect)
+
         for opened in self.open_list_visuals:
             self.visual_rect.center = (opened.state[0],opened.state[1])
             pygame.draw.rect(screen,(128,0,128), self.visual_rect)
-        # for closed in self.closed_list:
-        #     screen.set_at((closed.state[0],closed.state[1]),(255,255,0))
+
         # for path in self.node_sequence:
         #     screen.set_at((path.state[0], path.state[1]), (255, 0, 255))
         #screen.set_at((self.goal_node.state[0], self.goal_node.state[1]), (255, 255, 255))
