@@ -56,6 +56,7 @@ class Scheduler:
         self.on_fire.set_color(self.colors[1])
         self.on_fire.set_state(self.states[1])
         self.to_be_extinguished.append(self.on_fire)
+        self.fire_truck_go = True
 
     def expand_fire(self):
         for on_fire in self.obstacles.sprites():
@@ -73,6 +74,9 @@ class Scheduler:
         if len(self.to_be_extinguished) > 0:
             self.fire_truck_go = True
 
+        # if any(on_fire.state == self.states[1] for on_fire in self.obstacles.sprites()):
+        #     self.fire_truck_go = True
+
     def get_goal_unimog(self,unimog_pose):
 
         queue = dict()
@@ -87,10 +91,9 @@ class Scheduler:
             self.closest_fire = queue[min(queue)]
             return self.closest_fire.get_index()
 
-
     def set_extinguished(self,iterations):
         if self.wait_five_seconds < 5:
-            print('Spraying now!')
+            #print('Spraying now!')
             self.wait_five_seconds += 1
         elif self.wait_five_seconds == 5:
             extinguish = self.closest_fire

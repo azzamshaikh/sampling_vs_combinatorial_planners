@@ -101,7 +101,7 @@ class Wumpus(pygame.sprite.Sprite):
             self.pose_sequence = []
             self.iterations = 0
             self.pose_plotting_counter = 0
-            print('Planner is reinitialized')
+            print('Wumpus Planner is reinitialized')
 
     @staticmethod
     def distance(current_pos, end_pos):

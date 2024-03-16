@@ -150,7 +150,7 @@ class PRM:
         if reset is False:
             dist, goal_idx = self.sample_kd_tree.query([goal[0], goal[1]])
             self.goal_node = PRMNode(self.sample_x[goal_idx], self.sample_y[goal_idx], 0.0, -1)
-            print('Goal Node:', self.sample_x[goal_idx], "  ", self.sample_y[goal_idx])
+            #print('Goal Node:', self.sample_x[goal_idx], "  ", self.sample_y[goal_idx])
             self.goal_c_id = goal_idx
 
         elif reset is True:
@@ -163,10 +163,10 @@ class PRM:
             # self.start_node.f = 0
             self.start_node = PRMNode(self.solution_node.x,self.solution_node.y,0.0,-1)
 
-            print('Starting Node:', self.start_node.x, "  ", self.start_node.y)
+            #print('Starting Node:', self.start_node.x, "  ", self.start_node.y)
             dist, goal_idx = self.sample_kd_tree.query([goal[0], goal[1]])
             self.goal_node = PRMNode(self.sample_x[goal_idx],self.sample_y[goal_idx],0.0,-1)
-            print('Goal Node:', self.sample_x[goal_idx], "  ", self.sample_y[goal_idx])
+            #print('Goal Node:', self.sample_x[goal_idx], "  ", self.sample_y[goal_idx])
             self.goal_c_id = goal_idx
 
 

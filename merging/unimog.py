@@ -143,7 +143,7 @@ class Unimog(pygame.sprite.Sprite):
             self.current_waypoint_counter = 0
             self.pose_plotting_counter = 0
             self.pose_sequence_counter = 0
-            print('Planner is reinitialized')
+            print('Unimog Planner is reinitialized')
         else:
             # new_goal = list(new_goal)
             # new_goal.append(0)

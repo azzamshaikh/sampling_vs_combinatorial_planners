@@ -41,18 +41,16 @@ class Simulation:
 
     def unimog_run(self):
 
-        self.scheduler.fire_set()
+        #self.scheduler.fire_set()
 
         if self.scheduler.fire_truck_go:
             # update prm goal
             # follow logic below
             new_goal = self.scheduler.get_goal_unimog(self.truck.get_index())
-
             self.prm.update_goal(new_goal, False)
             if not self.prm.solution_found:
                 '''PRM LOGIC TO FIND PATH'''
                 self.prm.dijkstra_planning()
-
                 if self.prm.solution_found and not self.prm.solution_failed:
                     '''IF PRM HAS GOT A PATH, SEND THAT PATH TO THE UNIMOG'''
                     if len(self.prm.pose_sequence) == 0:
@@ -100,6 +98,8 @@ class Simulation:
             new_goal = self.scheduler.get_goal_unimog(self.truck.get_index())
             if new_goal is None:
                 self.prm.next_goal = False
+                self.scheduler.fire_truck_go = False
+                self.truck.solution_found = False
             else:
                 self.prm.update_goal(new_goal, True)
                 self.prm.next_goal = False
