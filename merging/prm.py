@@ -72,7 +72,7 @@ class PRM:
             self.solution_node = self.start_node
             self.solution_c_id = self.last_c_id
         else:
-            c_id = min(self.open_set, key=lambda o:self.open_set[o].cost) # inline funciton that will return the value with the smallest cost value
+            c_id = min(self.open_set, key=lambda o:self.open_set[o].heuristic) # inline funciton that will return the value with the smallest cost value
             # c-id is going to be the index of the smallest cost value in open set
             current = self.open_set[c_id]
             if len(self.open_set) < 2 and current.parent_index == -1:
@@ -303,10 +303,16 @@ class PRM:
                                    (self.path_x[idx+1],self.path_y[idx+1]))
 
     def statistics(self):
-        print('Here are the PRM Stats:')
-        print('\tTotal process time for sampling:', self.sampling_time)
-        print('\tTotal process time for map generation:', self.map_gen_time)
-        print('\tSummation of elapsed time from planner calls:',self.time_sum)
+        statement = ("\nHere are the statistics from the PRM:\n"
+                     "\tTotal process time for sampling: {total}\n\n"
+                     "\tTotal process time for map generation: {map}\n\n"
+                     "\tSummation of elapsed time from planner calls: {time}\n").format(total=self.sampling_time,
+                                                                                      map=self.map_gen_time,
+                                                                                      time=self.time_sum)
+        print(statement)
+        return statement
+
+
 
 
 class PRMNode:

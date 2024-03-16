@@ -1,5 +1,6 @@
 import pygame.time
 from pygame.locals import *
+import time
 """local file import"""
 from tetromino import *
 from wumpus import *
@@ -143,13 +144,22 @@ class Simulation:
         self.wumpus.end_timer = process_time()
         self.truck.end_timer = process_time()
         print('\nSim Time Reached!\n')
-        self.scheduler.statistics()
-        print()
-        self.wumpus.statistics()
-        print()
-        self.prm.statistics()
-        print()
-        self.truck.statistics()
+        output = [self.scheduler.statistics(),
+                  self.wumpus.statistics(),
+                  self.prm.statistics(),
+                  self.truck.statistics()]
+        time_str = time.strftime("%H_%M_%S")
+        file_name = "Wildfire_Data_" + time_str
+        with open(file_name,"x") as f:
+            f.writelines(output)
+        f.close()
+
+
+
+
+
+
+
 
 
 

@@ -167,7 +167,7 @@ class PRM:
             self.solution_found = True # prevents this function from being called if it cant find a path
         else:
 
-            c_id = min(self.open_set, key = lambda o:self.open_set[o].heuristic)
+            c_id = min(self.open_set, key = lambda o:self.open_set[o].cost)
             current = self.open_set[c_id]
             self.open_list_visuals.append(current)
 

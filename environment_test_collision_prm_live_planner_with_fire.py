@@ -469,7 +469,7 @@ class Simulation:
         self.height = height
         self.screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Car Simulation")
-        self.tetromino = Tetromino(10)
+        self.tetromino = Tetromino(25)
         self.tetromino.generate_grid()
         self.iterations = 0
 

@@ -342,6 +342,10 @@ class Unimog(pygame.sprite.Sprite):
             collide = pygame.sprite.spritecollideany(self, self.obstacles, collided=None)
 
     def statistics(self):
-        print('Here are the Unimog Stats:')
-        print('\tTotal process time from object initialization to end time:', self.end_timer-self.start_timer)
-        print('\tSummation of elapsed time from planner calls:',self.time_sum)
+        statement = ("\nHere are the statistics from the Unimog:\n"
+                     "\tTotal process time from object initialization to end time: {total}\n\n"
+                     "\tSummation of elapsed time from planner calls: {planner}\n").format(total=self.end_timer-self.start_timer,
+                                                                                           planner=self.time_sum)
+        print(statement)
+        return statement
+

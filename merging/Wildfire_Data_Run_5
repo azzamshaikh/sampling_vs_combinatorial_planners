@@ -1,0 +1,28 @@
+Here are the statistics from the Scheduler:
+	Total obstacles: 238
+
+	Total intact: 150
+	Intact Ratio: 0.6302521008403361
+
+	Total burned: 11
+	Burned Ratio: 0.046218487394957986
+
+	Total extinguished: 77
+	Extinguished Ratio: 0.3235294117647059
+
+Here are the statistics from the Wumpus:
+	Total process time from object initialization to end time: 62.03125
+
+	Summation of elapsed time from planner calls: 1.875
+
+Here are the statistics from the PRM:
+	Total process time for sampling: 0.03125
+
+	Total process time for map generation: 0.59375
+
+	Summation of elapsed time from planner calls: 0.0
+
+Here are the statistics from the Unimog:
+	Total process time from object initialization to end time: 62.03125
+
+	Summation of elapsed time from planner calls: 0.90625

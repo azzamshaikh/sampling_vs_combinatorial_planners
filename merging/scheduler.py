@@ -109,12 +109,26 @@ class Scheduler:
         self.n_burning= self.get_n_fire()
         # self.n_burned = self.get_n_burned()
         self.n_extinguished = self.get_n_extinguished()
-        print('Here are the statistics from the run:')
-        print('\tTotal obstacles:',self.n_total)
-        print('\tTotal intact:', self.n_intact)
-        print('\tTotal burning:', self.n_burning)
-        # print('Total burned:', self.n_burned)
-        print('\tTotal extinguished:', self.n_extinguished)
+
+        statement = ("Here are the statistics from the Scheduler:\n"
+                     "\tTotal obstacles: {total}\n\n"
+                     "\tTotal intact: {intact}\n"
+                     "\tIntact Ratio: {ratio_intact}\n\n"
+                     "\tTotal burned: {burned}\n"
+                     "\tBurned Ratio: {ratio_burned}\n\n"
+                     "\tTotal extinguished: {extinguished}\n"
+                     "\tExtinguished Ratio: {ratio_extinguished}\n").format(total=self.n_total,
+                                                                            intact=self.n_intact,
+                                                                            ratio_intact=self.n_intact/self.n_total,
+                                                                            burned=self.n_burning,
+                                                                            ratio_burned=self.n_burning/self.n_total,
+                                                                            extinguished=self.n_extinguished,
+                                                                            ratio_extinguished=self.n_extinguished/
+                                                                                               self.n_total)
+
+        print(statement)
+        return statement
+
 
     def get_n_intact(self):
         counter = 0
