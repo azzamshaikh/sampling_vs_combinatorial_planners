@@ -213,14 +213,14 @@ class Wumpus(pygame.sprite.Sprite):
         #screen.set_at((self.start_node.state[0],self.start_node.state[1]),(255,255,255))
         for opened in self.open_list_visuals:
             self.visual_rect.center = (opened.state[0],opened.state[1])
-            pygame.draw.rect(screen,(255,255,0), self.visual_rect)
+            pygame.draw.rect(screen,(128,0,128), self.visual_rect)
         # for closed in self.closed_list:
         #     screen.set_at((closed.state[0],closed.state[1]),(255,255,0))
         # for path in self.node_sequence:
         #     screen.set_at((path.state[0], path.state[1]), (255, 0, 255))
         #screen.set_at((self.goal_node.state[0], self.goal_node.state[1]), (255, 255, 255))
         for idx in range(0, len(self.node_sequence) - 1):
-            pygame.draw.line(screen, (255, 255, 0), self.node_sequence[idx].state[:2],
+            pygame.draw.line(screen, (128,0,128), self.node_sequence[idx].state[:2],
                              self.node_sequence[idx + 1].state[:2], width=1)
 
     def statistics(self):

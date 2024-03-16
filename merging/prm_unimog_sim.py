@@ -38,9 +38,9 @@ class PRM:
         self.start_node = PRMNode(self.sample_x[start_idx],self.sample_y[start_idx],0.0,-1)
 
 
-        #dist, goal_idx = self.sample_kd_tree.query([self.goal[0], self.goal[1]])
-        #print('Goal Node:',self.sample_x[goal_idx],"  ",self.sample_y[goal_idx])
-        #self.goal_node = PRMNode(self.sample_x[goal_idx],self.sample_y[goal_idx],0.0,-1)
+        dist, goal_idx = self.sample_kd_tree.query([self.goal[0], self.goal[1]])
+        print('Goal Node:',self.sample_x[goal_idx],"  ",self.sample_y[goal_idx])
+        self.goal_node = PRMNode(self.sample_x[goal_idx],self.sample_y[goal_idx],0.0,-1)
         self.solution_node = None
         self.open_set, self.closed_set = dict(), dict()
         self.open_set[len(self.roadmap)-1] = self.start_node
@@ -51,7 +51,7 @@ class PRM:
         self.path_x = []
         self.path_y = []
         self.solution_c_id = None
-        self.goal_c_id = None
+        self.goal_c_id = goal_idx
         self.solution_failed = False
 
         self.pose_sequence = None
@@ -148,11 +148,7 @@ class PRM:
 
     def update_goal(self,goal,reset=False):
         if reset is False:
-            dist, goal_idx = self.sample_kd_tree.query([goal[0], goal[1]])
-            self.goal_node = PRMNode(self.sample_x[goal_idx], self.sample_y[goal_idx], 0.0, -1)
-            print('Goal Node:', self.sample_x[goal_idx], "  ", self.sample_y[goal_idx])
-            self.goal_c_id = goal_idx
-
+            self.goal_node = PRMNode(goal[0],goal[1],0.0,-1)
         elif reset is True:
             #dist, start_idx = self.sample_kd_tree.query([self.solution_node.x, self.solution_node.y])
             #self.start_node = PRMNode(self.sample_x[start_idx],self.sample_y[start_idx],0.0,-1)

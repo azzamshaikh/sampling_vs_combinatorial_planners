@@ -49,9 +49,9 @@ class Scheduler:
         self.set_fire_update()
         return obstacle.get_index()
 
-    def set_fire(self, *args, **kwargs):
-        obstacle = np.random.choice(self.obstacles.sprites())
-        return obstacle
+    # def set_fire(self, *args, **kwargs):
+    #     obstacle = np.random.choice(self.obstacles.sprites())
+    #     return obstacle
 
     def set_extinguished(self,iterations):
         if self.wait_five_seconds < 5:

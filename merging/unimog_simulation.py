@@ -2,7 +2,7 @@ from pygame.locals import *
 """local file import"""
 from tetromino import *
 from unimog import *
-from prm import *
+from prm_unimog_sim import *
 from unimog_scheduler import *
 
 

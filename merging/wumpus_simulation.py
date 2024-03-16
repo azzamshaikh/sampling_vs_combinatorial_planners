@@ -29,7 +29,7 @@ class Simulation:
                     pygame.quit()
                     return
             self.screen.fill((210,180,140))  # Clear the screen
-            self.arson()
+            self.wumpus_run()
             self.render()
             pygame.display.flip()
             self.iterations += 1
@@ -41,7 +41,7 @@ class Simulation:
         self.scheduler = Scheduler(self.obstacle_group)
         self.wumpus.update_goal(self.scheduler.get_goal().get_index())
 
-    def arson(self):
+    def wumpus_run(self):
         if not self.wumpus.solution_found:
             self.wumpus.planner(self.screen)
         if self.wumpus.solution_found and self.wumpus.animation_wip:
