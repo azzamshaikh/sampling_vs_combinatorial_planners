@@ -234,6 +234,7 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(self.x,self.y))
         self.mask = pygame.mask.from_surface(self.image)
         self.index = (self.x, self.y)
+        self.wait_10_seconds = 0
 
     def updatepose(self, mouse_pose):
         self.x = mouse_pose[0]
@@ -255,6 +256,15 @@ class Obstacle(pygame.sprite.Sprite):
     def get_index(self):
         return self.index
 
+    def update_time(self):
+        if self.wait_10_seconds <= 10:
+            self.wait_10_seconds += 1
+        else:
+            pass
+
+
+
+
 
 
 
@@ -264,7 +274,7 @@ class Scheduler:
 
     def __init__(self,obstacles: pygame.sprite.Group):
         self.meter2pixel = 4
-        self.burning_radius = 10*self.meter2pixel
+        self.burning_radius = 30*self.meter2pixel
         self.obstacles = obstacles
         self.states = ['intact','burning','extinguished']
         self.colors = [None, (255,165,0), (128,128,128)]
@@ -289,12 +299,22 @@ class Scheduler:
 
 
     def __call__(self, iterations):
-        if iterations % 500 == 0:
-            self.set_fire()
-            print()
-            # self.statistics()
-        if iterations % 750 == 250:
-            self.expand_fire()
+        # if iterations % 500 == 0:
+        #     self.set_fire()
+        #     print()
+        #     # self.statistics()
+        # if iterations % 750 == 250:
+        #     self.expand_fire()
+
+        for onfire in self.obstacles.sprites():
+            if onfire.state == self.states[1]:
+                if onfire.wait_10_seconds == 10:
+                    self.expand_fire(onfire)
+                else:
+                    onfire.update_time()
+
+
+
 
     def set_fire(self, *args, **kwargs):
         # if self.fire_counter == 0:
@@ -306,9 +326,12 @@ class Scheduler:
         #     self.fire_counter += 1
 
         obstacle = np.random.choice(self.obstacles.sprites())
-        print('Setting fire at',obstacle.get_index())
-        obstacle.set_color(self.colors[1])
-        obstacle.set_state(self.states[1])
+        if obstacle.state == self.states[0]:
+            print('Setting fire at',obstacle.get_index())
+            obstacle.set_color(self.colors[1])
+            obstacle.set_state(self.states[1])
+            obstacle.update_time()
+
 
         # for obs_list in self.obstacles.sprites():
         #     print("From master list:", obs_list.get_index())
@@ -317,18 +340,25 @@ class Scheduler:
         #                                                           obstacle.get_index()) <= self.burning_radius:
         #         self.burn_nearby(obs_list)
 
-    def expand_fire(self):
-        for on_fire in self.obstacles.sprites():
-            if on_fire.state == self.states[1]:
-                for obs_list in self.obstacles.sprites():
-                    #print("From master list:",obs_list.get_index())
-                    #print("Current bush on fire:",on_fire.get_index())
-                    if (obs_list.state == self.states[0] and
-                            self.distance(obs_list.get_index(), on_fire.get_index()) <= self.burning_radius):
-                        #print('Setting fire at', obs_list.get_index())
-                        obs_list.set_color(self.colors[1])
-                        obs_list.set_state(self.states[1])
-
+    def expand_fire(self,on_fire):
+        # for on_fire in self.obstacles.sprites():
+        #     if on_fire.state == self.states[1]:
+        #         for obs_list in self.obstacles.sprites():
+        #             #print("From master list:",obs_list.get_index())
+        #             #print("Current bush on fire:",on_fire.get_index())
+        #             if (obs_list.state == self.states[0] and
+        #                     self.distance(obs_list.get_index(), on_fire.get_index()) <= self.burning_radius):
+        #                 #print('Setting fire at', obs_list.get_index())
+        #                 obs_list.set_color(self.colors[1])
+        #                 obs_list.set_state(self.states[1])
+        for obs_list in self.obstacles.sprites():
+            #print("From master list:",obs_list.get_index())
+            #print("Current bush on fire:",on_fire.get_index())
+            if (obs_list.state == self.states[0] and
+                    self.distance(obs_list.get_index(), on_fire.get_index()) <= self.burning_radius):
+                #print('Setting fire at', obs_list.get_index())
+                obs_list.set_color(self.colors[1])
+                obs_list.set_state(self.states[1])
 
     # def set_burned(self, *args, **kwargs):
     #     if self.burned_counter == 0:
@@ -465,7 +495,10 @@ class Simulation:
         #                   Obstacle(850, 925, 300, 150)]
 
 
+        self.clock = pygame.time.Clock()
+
         self.obstacle_group = pygame.sprite.Group()
+
 
         #self.obstacles = []
         for index in self.tetromino.world_obs:
@@ -485,7 +518,7 @@ class Simulation:
         obj = Obstacle((0,0))
         clock = pygame.time.Clock()
         counter = 0
-        while True:
+        while self.iterations < 3601:
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
@@ -537,6 +570,9 @@ class Simulation:
 
             #self.wumpus.update()
 
+            if self.iterations % 500 == 0:
+                self.scheduler.set_fire()
+
 
 
 
@@ -548,6 +584,7 @@ class Simulation:
             #planner.set_pixels(self.screen)
             pygame.display.flip()
             self.iterations += 1
+            self.clock.tick(60)
 
 
 if __name__ == "__main__":

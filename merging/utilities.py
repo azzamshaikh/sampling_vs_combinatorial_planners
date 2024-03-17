@@ -47,6 +47,8 @@ class Obstacle(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(center=(self.x,self.y))
         self.mask = pygame.mask.from_surface(self.image)
         self.index = (self.x, self.y)
+        self.wait_10_seconds = 0
+        self.who_set_the_fire = None
 
     def updatepose(self, mouse_pose):
         self.x = mouse_pose[0]
@@ -66,6 +68,14 @@ class Obstacle(pygame.sprite.Sprite):
 
     def get_index(self):
         return self.index
+
+    def update_time(self):
+        if self.wait_10_seconds <= 10:
+            self.wait_10_seconds += 1
+
+    def set_who_set_fire(self,who):
+        self.who_set_the_fire = who
+
 
 
 class DummyWumpus(pygame.sprite.Sprite):

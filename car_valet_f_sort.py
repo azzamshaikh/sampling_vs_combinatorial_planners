@@ -91,6 +91,12 @@ def cost(current_pos, start_pos):
 def angular_cost(current_theta,goal_theta):
     return abs(goal_theta-current_theta)
 
+def steering_cost(w):
+    return 1 if w != 0 else 0
+
+def reverse_cost(v):
+    return 5 if v < 0 else 0
+
 # ---------------------------------------Planner Class------------------------------------------------------------------
 
 
@@ -111,10 +117,10 @@ class Planner:
         self.obstacles = obstacles
         self.original_image = pygame.Surface([280, 100], pygame.SRCALPHA)
 
-        self.motion_primitives = [(-1, -35, 1), (-1, 0, 1), (-1, 35, 1), (1, -35, 1), (1, 0, 1), (1, 35, 1)]
+        self.motion_primitives = [(-1, -35, 1.4), (-1, 0, 1), (-1, 35, 1.4), (1, -35, 1.4), (1, 0, 1), (1, 35, 1.4)]
         self.meters2pixels = 35
         self.L = 2.8 * self.meters2pixels
-        self.dt = 1
+        self.dt = 3
 
         self.test_vehicle = Vehicle(0, 0, (0, 0, 255), 0)
 
@@ -162,7 +168,7 @@ class Planner:
             else:
                 new_node = Node(new_state,current_node)
                 new_node.h = round(distance(current_node.state,self.goal_node.state),2)
-                new_node.g = round(current_node.g + action_cost, 2) # angular_cost(new_node.state[2], self.goal_node.state[2]) + cost(current_node.state, new_node.state)
+                new_node.g = round(current_node.g + steering_cost(w) + reverse_cost(v) + cost(current_node.state, new_node.state),2)# angular_cost(new_node.state[2], self.goal_node.state[2]),2)# +
                 new_node.f = round(new_node.g + new_node.h,2)
                 children.append(new_node)
 
@@ -172,7 +178,7 @@ class Planner:
             elif any([node == child for f,h, node in self.open_list.queue]):
                 for index, (f,h,item) in enumerate(self.open_list.queue):
                     if child == item:
-                        if child.h < item.h:
+                        if child.f < item.f:
                             self.open_list.queue.remove((item.f, item.h, item))
                             self.open_list.put((child.f,child.h,child))
 

@@ -72,7 +72,7 @@ class PRM:
             self.solution_node = self.start_node
             self.solution_c_id = self.last_c_id
         else:
-            c_id = min(self.open_set, key=lambda o:self.open_set[o].cost) # inline funciton that will return the value with the smallest cost value
+            c_id = min(self.open_set, key=lambda o:self.open_set[o].heuristic) # inline funciton that will return the value with the smallest cost value
             # c-id is going to be the index of the smallest cost value in open set
             current = self.open_set[c_id]
             if len(self.open_set) < 2 and current.parent_index == -1:
