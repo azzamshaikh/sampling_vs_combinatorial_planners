@@ -100,6 +100,7 @@ class Simulation:
             new_goal = self.scheduler.get_goal_unimog(self.truck.get_index())
             if new_goal is None:
                 self.prm.next_goal = False
+                self.prm.solution_found = False
                 self.scheduler.fire_truck_go = False
                 self.truck.solution_found = False
             else:

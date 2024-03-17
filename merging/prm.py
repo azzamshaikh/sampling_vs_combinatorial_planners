@@ -174,6 +174,7 @@ class PRM:
             self.open_set[self.solution_c_id] = self.start_node
 
             self.solution_found = False
+            self.solution_failed = False
             self.solution_node = None
             self.open_list_visuals = []
             self.path_x = []
