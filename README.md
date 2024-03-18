@@ -1,4 +1,4 @@
-# Wildfire -  Probabilistic RoadMap versus A* Planner
+# Wildfire -  Probabilistic RoadMap vs A* Planner
 
 This repository contains code of a 2 player simulation comparing a sampling based Probabilistic Roadmap versus a combinatorial based A* planner. 
 
